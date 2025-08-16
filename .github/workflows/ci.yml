@@ -21,6 +21,9 @@ jobs:
       # 1) Check out your repository at the commit being built.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
       # 2) Install dependencies for building & coverage.
       #    - build-essential gives you gcc/g++, make, etc.
