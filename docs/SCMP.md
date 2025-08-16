@@ -279,3 +279,17 @@ type: feat, fix, refactor, test, docs, chore
 
 Tags: vMAJOR.MINOR.PATCH[-rc.n]
 ```
+
+## Appendix D — CI Setup (GitHub Actions)
+
+This CI pipeline does four main things on every push/PR to `main`:
+
+1) **Build** the project (CMake example; switch to Make if you prefer).  
+2) **Run unit tests** (expects tests to live under `tests/` and produce an exit code).  
+3) **Generate code coverage** with `gcovr` (statement/decision coverage).  
+4) **Upload artifacts** (test logs, coverage HTML) for inspection.
+
+> Tip: keep compilation flags in your build files so coverage works:  
+> `-O0 -g -fprofile-arcs -ftest-coverage`
+
+### File: `.github/workflows/ci.yml`
