@@ -30,12 +30,3 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 enable_testing()
 add_subdirectory(src)
 add_subdirectory(tests)
-
-# Build a static library from your source files
-add_library(flight_control STATIC
-  pid_controller.c
-  sensor_stub.c
-  actuator_stub.c
-)
-
-target_include_directories(flight_control PUBLIC ${CMAKE_SOURCE_DIR}/src)

@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Optional: run on changes to source or tests only
+  # paths:
+  #   - "src/**"
+  #   - "tests/**"
+  #   - "CMakeLists.txt"
+  #   - ".github/workflows/ci.yml"
+
+jobs:
+  build-test-coverage:
+    name: Build, Test, Coverage (Ubuntu)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Check out your repository at the commit being built.
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      # 2) Install dependencies for building & coverage.
+      #    - build-essential gives you gcc/g++, make, etc.
+      #    - gcovr parses gcov data to produce coverage reports.
+      #    - lcov is optional; we use gcovr here.
+      - name: Install toolchain & coverage tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake gcovr
+
+      # 3) Configure the build with coverage-friendly flags.
+      #    If your project uses CMake, set CFLAGS/CXXFLAGS for all targets;
+      #    you can also append these flags in your CMakeLists for a "Coverage" config.
+      - name: Configure (CMake)
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_FLAGS="--coverage -O0 -g" \
+            -DCMAKE_CXX_FLAGS="--coverage -O0 -g"
+
+      # 4) Compile.
+      - name: Build
+        run: cmake --build build --config Debug -- -j$(nproc)
+
+      # 5) Run unit tests.
+      #    - If using CTest, this will auto-discover tests added via add_test().
+      #    - Otherwise, replace with a direct test binary invocation, e.g. ./build/tests/runner
+      - name: Run tests (CTest)
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      # 6) Generate coverage reports with gcovr.
+      #    - --root . ensures paths are relative to the repo root for clean reports
+      #    - --exclude can be used to omit third-party or test code from coverage
+      #    - We produce both an XML (machine-readable) and HTML (human-readable) report.
+      - name: Coverage (gcovr XML + HTML)
+        run: |
+          mkdir -p coverage
+          gcovr \
+            --root . \
+            --xml-pretty --output coverage/coverage.xml \
+            --branches \
+            --exclude 'tests/.*' \
+            --exclude 'third_party/.*' \
+            --print-summary
+          gcovr \
+            --root . \
+            --html --html-details --output coverage/index.html \
+            --branches \
+            --exclude 'tests/.*' \
+            --exclude 'third_party/.*'
+        working-directory: build
+
+      # 7) Upload coverage & test logs as workflow artifacts you can download.
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: build/coverage
+          if-no-files-found: error
+
+  # (Optional) Static analysis job with cppcheck — keeps code quality in check.
+  # Add a basic configuration; expand with your rules later.
+  static-analysis:
+    name: Static Analysis (cppcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+
+      # --enable=warning,style,performance,portability is a good starting set.
+      # Adjust includes/excludes to your tree layout.
+      - name: Run cppcheck
+        run: |
+          cppcheck \
+            --enable=warning,style,performance,portability \
+            --language=c \
+            --std=c99 \
+            --inline-suppr \
+            --suppress=missingIncludeSystem \
+            --error-exitcode=1 \
+            -I src \
+            src tests
+
+      # Optional: upload cppcheck XML if you generate it
+      # - name: Upload cppcheck report
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: cppcheck-report
+      #     path: cppcheck.xml

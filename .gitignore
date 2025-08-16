@@ -1,0 +1,23 @@
+# Build
+/build/
+CMakeFiles/
+CMakeCache.txt
+*.ninja
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+
+# Coverage
+*.gcda
+*.gcno
+*.gcov
+/coverage/
+/build/coverage/
+
+# OS/editor cruft
+.DS_Store
+.vscode/
