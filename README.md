@@ -7,6 +7,43 @@ It is structured to serve as both a **portfolio project** and a **future referen
 
 ---
 
+## 📊 Typical Safety-Critical Development Process Flow Chart
+
+Here's a flow chart of the typical safety-critical development process (aligned with **DO-178C, ISO 26262, IEC 62304**, etc.):
+
+```mermaid
+flowchart TD
+
+    A[System Requirements & Safety Assessment] --> B[Software Planning]
+    B --> C[High-Level Requirements - HLR]
+    C --> D[Low-Level Requirements - LLR & Design]
+    D --> E[Source Code Implementation]
+    E --> F[Verification]
+    F --> G[Integration & Hardware-in-the-Loop Testing]
+    G --> H[Certification Evidence & Deliverables]
+
+    %% Sub-details
+    A --- A1[FHA - Functional Hazard Assessment]
+    A --- A2[FTA - Fault Tree Analysis]
+    A --- A3[HARA - Hazard Analysis & Risk Assessment]
+
+    B --- B1[PSAC - Plan for Software Aspects of Certification]
+    B --- B2[SDP - Software Development Plan]
+    B --- B3[SVP - Software Verification Plan]
+    B --- B4[SCMP - Software Configuration Management Plan]
+    B --- B5[SQAP - Software Quality Assurance Plan]
+
+    E --- E1[C with coding standards - MISRA]
+
+    F --- F1[Unit Tests]
+    F --- F2[Code Reviews]
+    F --- F3[Coverage - Statement/Decision/MC/DC]
+
+    H --- H1[Traceability Matrix]
+    H --- H2[Test Reports]
+    H --- H3[Compliance Records]
+```
+
 ## 📑 Development Flow (Step by Step)
 
 ### 1. System Requirements & Safety Assessment  
